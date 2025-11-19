@@ -89,8 +89,8 @@ tailwind.app.js
 ### 1. **Clone the repository**
 
 ```bash
-git clone https://github.com/<your-org-or-username>/campus-exit-management-system.git
-cd campus-exit-management-system
+git clone https://github.com/BU-SENG/foss-project-olive.git
+cd foss-project-olive
 ```
 
 ### 2. **Install dependencies**
