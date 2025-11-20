@@ -21,7 +21,7 @@ export const useUserRole = (userId: string | undefined) => {
 
     const fetchRole = async () => {
       try {
-        const { data, error } = await supabase
+        const { data } = await supabase
           .from("user_roles")
           .select("role")
           .eq("user_id", userId)
@@ -37,8 +37,8 @@ export const useUserRole = (userId: string | undefined) => {
           console.error("Failed to fetch user role after multiple attempts.");
           setLoading(false);
         }
-      } catch (err) {
-        console.error("Error fetching role:", err);
+      } catch {
+        console.error("Error fetching role");
         setLoading(false);
       }
     };
