@@ -19,7 +19,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -32,6 +31,7 @@ import {
   QrCode,
   MessageSquare,
   Trash2,
+  Info
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ProfileSection } from "@/components/ProfileSection";
@@ -106,15 +106,16 @@ const StudentDashboard = () => {
     const fileName = `${Math.random()}.${fileExt}`;
     const filePath = `${path}/${fileName}`;
     const { error } = await supabase.storage
-      .from("exit_docs")
+      .from("exit-docs")
       .upload(filePath, file);
     if (error) throw error;
-    const { data } = supabase.storage.from("exit_docs").getPublicUrl(filePath);
+    const { data } = supabase.storage.from("exit-docs").getPublicUrl(filePath);
     return data.publicUrl;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) return;
     setUploading(true);
 
     try {
@@ -182,7 +183,7 @@ const StudentDashboard = () => {
       const hodStatus = needsHOD ? "pending" : "approved";
 
       const { error } = await supabase.from("exit_requests").insert({
-        student_id: user?.id,
+        student_id: user.id,
         reason: formData.reason,
         destination: formData.destination,
         departure_date: finalDeparture,
@@ -265,17 +266,17 @@ const StudentDashboard = () => {
   return (
     <DashboardLayout title="Student Dashboard">
       <Tabs defaultValue="requests" className="space-y-6">
-        <TabsList>
+        <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
           <TabsTrigger value="requests">Exit Requests</TabsTrigger>
           <TabsTrigger value="profile">Profile</TabsTrigger>
         </TabsList>
 
         <TabsContent value="requests" className="space-y-6">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <h2 className="text-xl font-bold">My Exit Requests</h2>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button>
+                <Button className="w-full sm:w-auto">
                   <Plus className="mr-2 h-4 w-4" /> New Request
                 </Button>
               </DialogTrigger>
@@ -284,7 +285,7 @@ const StudentDashboard = () => {
                   <DialogTitle>Request Exit Pass</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>Exit Type</Label>
                       <Select
@@ -317,6 +318,17 @@ const StudentDashboard = () => {
                       />
                     </div>
                   </div>
+
+                  {/* --- NEW: OVERNIGHT NOTICE --- */}
+                  {formData.exitType === 'overnight' && (
+                    <Alert className="bg-blue-50 border-blue-200">
+                      <Info className="h-4 w-4 text-blue-600" />
+                      <AlertTitle className="text-blue-800 font-semibold">Overnight Request</AlertTitle>
+                      <AlertDescription className="text-blue-700 text-xs">
+                        You are required to attach a <strong>Parent Letter</strong> and <strong>Parent ID Card</strong> for all overnight trips.
+                      </AlertDescription>
+                    </Alert>
+                  )}
 
                   <div className="space-y-2">
                     <Label>Reason</Label>
@@ -373,9 +385,9 @@ const StudentDashboard = () => {
                       </div>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label>Departure Date & Time</Label>
+                        <Label>Departure</Label>
                         <Input
                           type="datetime-local"
                           required
@@ -388,7 +400,7 @@ const StudentDashboard = () => {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Expected Return Date & Time</Label>
+                        <Label>Return</Label>
                         <Input
                           type="datetime-local"
                           required
@@ -401,6 +413,17 @@ const StudentDashboard = () => {
                         />
                       </div>
                     </div>
+                  )}
+
+                  {/* --- NEW: SCHOOL DAY WARNING --- */}
+                  {needsHOD && (
+                    <Alert variant="default" className="bg-yellow-50 border-yellow-200">
+                       <AlertCircle className="h-4 w-4 text-yellow-600" />
+                       <AlertTitle className="text-yellow-800 font-semibold">School Day Conflict</AlertTitle>
+                       <AlertDescription className="text-yellow-700 text-xs">
+                         Your trip clashes with school days (Mon-Thu). You MUST upload a <strong>Leave of Absence Form</strong> signed by your lecturers.
+                       </AlertDescription>
+                    </Alert>
                   )}
 
                   {needsHOD && (
@@ -423,6 +446,7 @@ const StudentDashboard = () => {
                         }
                         required
                       />
+                      <p className="text-[10px] text-muted-foreground">Signed by your course lecturers.</p>
                     </div>
                   )}
 
@@ -469,54 +493,37 @@ const StudentDashboard = () => {
             </Dialog>
           </div>
 
-          <div className="grid gap-4">
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
             {requests.map((req) => (
-              <Card key={req.id} className="relative">
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-lg">
-                        {req.exit_type?.toUpperCase() || "EXIT"} -{" "}
-                        {req.destination}
+              <Card key={req.id} className="relative flex flex-col">
+                <CardHeader className="pb-2">
+                  <div className="flex flex-col sm:flex-row justify-between items-start gap-2">
+                    <div className="w-full sm:w-auto">
+                      <CardTitle className="text-lg break-words leading-tight">
+                        {req.exit_type?.toUpperCase()} - {req.destination}
                       </CardTitle>
                       <p className="text-xs text-muted-foreground mt-1">
                         Created: {new Date(req.created_at).toLocaleDateString()}
                       </p>
                     </div>
-                    <div className="flex flex-col items-end gap-2">
-                      <div className="flex items-center gap-2">
-                        {req.status === "pending" && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-muted-foreground hover:text-red-600 hover:bg-red-50"
-                            onClick={() => setDeleteId(req.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        )}
-                        <StatusBadge status={req.status} />
-                      </div>
-
-                      {(req.status === "approved" || req.status === "exited") &&
-                        req.qr_code && (
-                          <Button
-                            size="sm"
-                            onClick={() => setSelectedPass(req)}
-                            className="bg-blue-600 hover:bg-blue-700"
-                          >
-                            <QrCode className="h-4 w-4 mr-2" />
-                            {req.status === "exited"
-                              ? "Return Gate Pass"
-                              : "Exit Gate Pass"}
-                          </Button>
-                        )}
+                    <div className="flex items-center gap-2 self-end sm:self-start">
+                      {req.status === "pending" && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground hover:text-red-600 hover:bg-red-50"
+                          onClick={() => setDeleteId(req.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                      <StatusBadge status={req.status} />
                     </div>
                   </div>
                 </CardHeader>
 
-                <CardContent>
-                  <div className="flex items-center space-x-2 text-sm mb-4 bg-muted/50 p-2 rounded">
+                <CardContent className="flex-1 flex flex-col gap-4">
+                  <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm bg-muted/50 p-2 rounded">
                     <div
                       className={
                         req.hod_status === "approved"
@@ -542,7 +549,7 @@ const StudentDashboard = () => {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 mb-2 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                     <div className="flex items-center text-muted-foreground">
                       <CalendarArrowUp className="h-4 w-4 mr-2 text-blue-500" />
                       <span>
@@ -563,39 +570,53 @@ const StudentDashboard = () => {
                     </div>
                   </div>
 
-                  <p className="text-sm text-muted-foreground mb-3">
+                  <p className="text-sm text-muted-foreground break-words">
                     <span className="font-semibold">Reason:</span> {req.reason}
                   </p>
 
                   {(req.rejection_reason || req.hod_comment) && (
-                    <div className="space-y-2 mt-3 pt-3 border-t border-border">
+                    <div className="space-y-2 pt-2 border-t border-border mt-auto">
                       {req.hod_comment && (
                         <Alert
                           variant="default"
-                          className="bg-yellow-50/50 border-yellow-200"
+                          className="bg-yellow-50/50 border-yellow-200 p-2"
                         >
-                          <MessageSquare className="h-4 w-4 text-yellow-600" />
-                          <AlertTitle className="text-yellow-800 text-sm font-semibold">
+                          <MessageSquare className="h-3 w-3 text-yellow-600" />
+                          <AlertTitle className="text-yellow-800 text-xs font-semibold ml-2">
                             HOD Comment
                           </AlertTitle>
-                          <AlertDescription className="text-yellow-700 text-xs">
+                          <AlertDescription className="text-yellow-700 text-xs ml-5">
                             {req.hod_comment}
                           </AlertDescription>
                         </Alert>
                       )}
                       {req.rejection_reason && (
-                        <Alert variant="destructive">
-                          <AlertCircle className="h-4 w-4" />
-                          <AlertTitle className="font-semibold">
-                            Request Declined
+                        <Alert variant="destructive" className="p-2">
+                          <AlertCircle className="h-3 w-3" />
+                          <AlertTitle className="font-semibold text-xs ml-2">
+                            Declined
                           </AlertTitle>
-                          <AlertDescription>
+                          <AlertDescription className="text-xs ml-5">
                             {req.rejection_reason}
                           </AlertDescription>
                         </Alert>
                       )}
                     </div>
                   )}
+
+                  {(req.status === "approved" || req.status === "exited") &&
+                    req.qr_code && (
+                      <Button
+                        size="sm"
+                        onClick={() => setSelectedPass(req)}
+                        className="bg-blue-600 hover:bg-blue-700 w-full mt-auto"
+                      >
+                        <QrCode className="h-4 w-4 mr-2" />
+                        {req.status === "exited"
+                          ? "Return Gate Pass"
+                          : "Exit Gate Pass"}
+                      </Button>
+                    )}
                 </CardContent>
               </Card>
             ))}

@@ -44,7 +44,8 @@ const HallAdminDashboard = () => {
       .order("created_at", { ascending: false });
 
     if (statusFilter !== "all") {
-      query = query.eq("status", statusFilter);
+      // Fixed: Type assertion added
+      query = query.eq("status", statusFilter as any);
     }
 
     const { data, error } = await query;
@@ -64,14 +65,12 @@ const HallAdminDashboard = () => {
       return;
     }
 
-    // GENERATE SHORT CODE: CEMS-XXXXXXXX (8 characters)
     const shortCode = `CEMS-${request.id.substring(0, 8).toUpperCase()}`;
-
     const { error } = await supabase.from("exit_requests").update({
         status: "approved",
         reviewed_by: user?.id,
         reviewed_at: new Date().toISOString(),
-        qr_code: shortCode, // <--- UPDATED HERE
+        qr_code: shortCode,
       }).eq("id", request.id);
 
     if (!error) {
@@ -150,7 +149,6 @@ const HallAdminDashboard = () => {
             )}
           </div>
 
-          {/* Dialogs remain here because they are global to the page */}
           <Dialog open={!!qrRequest} onOpenChange={() => setQrRequest(null)}>
             <DialogContent>
               <DialogHeader>
