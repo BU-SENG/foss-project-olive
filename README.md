@@ -150,7 +150,7 @@ Deployment is configured for **Vercel**, but this build output also works on Net
 4. Add the same environment variables under **Project Settings → Environment Variables**
 5. Deploy and publish 🎉
 
-Project is available at [https://cems-main.vercel.app/](https://foss-project-olive.vercel.app/)
+Project is available at [https://foss-project-olive.vercel.app](https://foss-project-olive.vercel.app/)
 
 ---
 
