@@ -20,7 +20,7 @@ We follow the **Feature Branch Workflow**. Please do not push changes directly t
 1.  Fork the repository to your own GitHub account.
 2.  Clone the project to your local machine:
     ```bash
-    git clone [https://github.com/BU-SENG/foss-project-olive.git](https://github.com/BU-SENG/foss-project-olive.git)
+    git clone (https://github.com/BU-SENG/foss-project-olive.git
     cd foss-project-olive
     ```
 3.  Install dependencies:
@@ -34,6 +34,7 @@ Create a new branch for your specific task. Use a descriptive name that explains
 ```bash
 git checkout -b feature/add-(feature-you-are-adding)
 # Example: git checkout -b feature/add-login-screen
+```
 
 ### 3. Coding Standards
 To keep the codebase clean and maintainable, please follow these rules:
