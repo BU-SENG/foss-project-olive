@@ -106,7 +106,7 @@ Create a `.env.local` file in the project root:
 ```env
 VITE_SUPABASE_URL=your-supabase-url
 VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
-VITE_SUPABASE_SERVICE_ROLE=your-service-role-key (optional if needed)
+VITE_SUPABASE_SERVICE_ROLE=your-service-role-key
 VITE_APP_BASE_URL=http://localhost:5173
 ```
 
@@ -150,7 +150,7 @@ Deployment is configured for **Vercel**, but this build output also works on Net
 4. Add the same environment variables under **Project Settings → Environment Variables**
 5. Deploy and publish 🎉
 
-Project is available at [https://cems-main.vercel.app/](https://cems-main.vercel.app/)
+Project is available at [https://cems-main.vercel.app/](https://foss-project-olive.vercel.app/)
 
 ---
 
